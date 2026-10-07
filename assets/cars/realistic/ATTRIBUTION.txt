@@ -1,0 +1,19 @@
+# Realistic cars (garage / player)
+
+Each garage slot uses a different free CC-Attribution GLB from Get3DModels / GetGLB
+(OUTPISTON redistributions of Sketchfab-sourced models). All are clean street cars
+(no rust / wreckage models).
+
+- `beater.glb` — 2006 Audi S4 (starter sedan)
+- `sedan.glb` — 2004 Volvo S60R
+- `coupe.glb` — 2003 Renault Clio V6 Renault Sport
+- `muscle.glb` — 2015 Chevrolet Camaro Z28
+- `sports.glb` — 2014 Chevrolet Corvette C7 Z51
+- `gt.glb` — 2005 BMW M3 GTR (NFS MW style)
+
+Sources:
+- https://www.getglb.com/category/vehicles/
+- https://www.get3dmodels.com/
+
+License: Creative Commons Attribution (CC-BY)
+Kenney Car Kit GLBs in `assets/cars/` remain CC0 fallbacks.

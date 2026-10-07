@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blacktop Dual — Police Chase</title>
+  <!-- No tab icon -->
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body class="mode-1p">
+  <div id="mobile-block" role="alert" aria-live="assertive">
+    <div class="mobile-block-panel">
+      <p class="eyebrow">UNSUPPORTED DEVICE</p>
+      <h2>DESKTOP ONLY</h2>
+      <p class="tagline">This website cannot be opened on mobile screens. Please open Blacktop Dual on a desktop or laptop.</p>
+    </div>
+  </div>
+
+  <div id="app">
+    <div id="game-wrap">
+      <canvas id="game"></canvas>
+      <div id="split-labels" class="hidden">
+        <div class="split-label left">P1 · WASD</div>
+        <div class="split-label right">P2 · ARROWS</div>
+      </div>
+      <div id="split-divider" class="hidden"></div>
+      <div id="wanted-banner" class="hidden">WANTED</div>
+      <div id="zone-toast" class="hidden"></div>
+
+      <div id="damage-hud" class="hidden">
+        <div class="dmg-panel left">
+          <div class="dmg-label">P1 DAMAGE</div>
+          <div class="dmg-track"><div id="p1-dmg-fill" class="dmg-fill"></div></div>
+        </div>
+        <div class="dmg-panel right">
+          <div class="dmg-label">P2 DAMAGE</div>
+          <div class="dmg-track"><div id="p2-dmg-fill" class="dmg-fill"></div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Auth / profile -->
+    <div id="auth-screen" class="overlay">
+      <div class="panel compact auth-panel">
+        <p class="eyebrow">DRIVER PROFILE</p>
+        <h2>SIGN IN</h2>
+        <p class="tagline">Each email keeps its own cash, garage, and drop progress so you can continue where you left off.</p>
+        <form id="auth-form" class="auth-form" autocomplete="on">
+          <label class="auth-field">
+            <span>Email</span>
+            <input id="auth-email" type="email" name="email" required placeholder="you@example.com" autocomplete="username" />
+          </label>
+          <label class="auth-field">
+            <span>Password</span>
+            <input id="auth-password" type="password" name="password" required minlength="4" placeholder="At least 4 characters" autocomplete="current-password" />
+          </label>
+          <p id="auth-error" class="auth-error hidden" role="alert"></p>
+          <button id="auth-login-btn" class="btn primary" type="submit">CONTINUE</button>
+          <button id="auth-signup-btn" class="btn ghost" type="button">CREATE PROFILE</button>
+        </form>
+        <p class="hint">Progress is stored on this device, separately for each email.</p>
+      </div>
+    </div>
+
+    <!-- Start -->
+    <div id="start-screen" class="overlay hidden">
+      <div class="panel">
+        <div id="profile-bar" class="profile-bar hidden">
+          <div class="profile-meta">
+            <span id="profile-email" class="profile-email"></span>
+            <span id="profile-summary" class="profile-summary"></span>
+          </div>
+          <button id="logout-btn" class="btn ghost profile-logout" type="button">SWITCH PROFILE</button>
+        </div>
+        <p class="eyebrow" id="start-eyebrow">GETAWAY · SOLO</p>
+        <h1>BLACKTOP<span>DUAL</span></h1>
+        <p class="tagline">Pick up robbers, hit gas for nitro, duck into clubs to cool heat, and cash bigger bank jobs at the safehouse.</p>
+
+        <div class="mode-toggle" role="group" aria-label="Player mode">
+          <button type="button" id="mode-1p" class="mode-btn active" data-mode="1">1 PLAYER</button>
+          <button type="button" id="mode-2p" class="mode-btn" data-mode="2">2 PLAYER</button>
+        </div>
+
+        <div class="controls-grid" id="controls-grid">
+          <div class="control-card p1">
+            <div class="car-badge red" aria-hidden="true">
+              <img src="assets/car-badge-red.png" alt="" />
+            </div>
+            <h3 id="p1-control-title">Driver</h3>
+            <p class="keys">W A S D</p>
+            <ul>
+              <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Drive</li>
+              <li><kbd>S</kbd> Reverse / Drift</li>
+              <li><kbd>C</kbd> Look back</li>
+              <li><kbd>Shift</kbd> Reset</li>
+            </ul>
+          </div>
+          <div class="control-card p2" id="p2-controls">
+            <div class="car-badge blue" aria-hidden="true">
+              <img src="assets/car-badge-blue.png" alt="" />
+            </div>
+            <h3>Player 2</h3>
+            <p class="keys">Arrow Keys</p>
+            <ul>
+              <li><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> Drive</li>
+              <li><kbd>↓</kbd> Reverse / Drift</li>
+              <li><kbd>/</kbd> Look back</li>
+              <li><kbd>.</kbd> Reset</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="hint mission-hint">Look for the waving ROBBER · Drop off at the gold SAFEHOUSE · Crash damage fills the top bars · Hospitals repair · Gas boosts · Clubs cool heat</p>
+        <button id="start-btn" class="btn primary">START GETAWAY</button>
+        <p class="hint">Press <kbd>Enter</kbd> · <kbd>Esc</kbd> pause · <kbd>G</kbd> garage</p>
+      </div>
+    </div>
+
+    <!-- Garage showroom -->
+    <div id="garage-screen" class="overlay garage-overlay hidden">
+      <div class="garage-showroom">
+        <header class="garage-top">
+          <div class="garage-brand">
+            <p class="eyebrow">CHOP SHOP</p>
+            <h2>GARAGE</h2>
+          </div>
+          <div id="cash-display" class="cash-big">$0</div>
+          <button id="garage-close" class="btn ghost garage-back" type="button">
+            BACK TO STREETS
+            <span class="btn-keys"><kbd>Esc</kbd> <kbd>G</kbd></span>
+          </button>
+        </header>
+
+        <div class="garage-body">
+          <div class="garage-stage">
+            <canvas id="garage-canvas"></canvas>
+            <button id="garage-prev" class="garage-arrow left" type="button" aria-label="Previous car">
+              <span class="arrow-glyph">‹</span>
+              <kbd>←</kbd>
+            </button>
+            <button id="garage-next" class="garage-arrow right" type="button" aria-label="Next car">
+              <span class="arrow-glyph">›</span>
+              <kbd>→</kbd>
+            </button>
+            <div class="garage-stage-caption">
+              <span id="garage-car-index">1 / 6</span>
+              <strong id="garage-car-name">Scrap Runner</strong>
+            </div>
+            <p class="garage-keys-hint">
+              <kbd>←</kbd><kbd>→</kbd> Switch car · <kbd>Esc</kbd>/<kbd>G</kbd> Back
+            </p>
+          </div>
+
+          <aside class="garage-stats-card">
+            <p class="garage-stats-eyebrow">VEHICLE SPECS</p>
+            <h3 id="garage-car-title">Scrap Runner</h3>
+            <p id="garage-car-status" class="garage-status">OWNED</p>
+
+            <div class="stat-block">
+              <div class="stat-heading">
+                <span>SPEED</span>
+                <span id="garage-speed-val">0</span>
+              </div>
+              <div class="stat-bar"><div id="garage-speed-fill" class="stat-fill speed"></div></div>
+            </div>
+
+            <div class="stat-block">
+              <div class="stat-heading">
+                <span>ARMOR</span>
+                <span id="garage-armor-val">0</span>
+              </div>
+              <div class="stat-bar"><div id="garage-armor-fill" class="stat-fill armor"></div></div>
+            </div>
+
+            <button id="garage-action" class="btn primary" type="button">EQUIP</button>
+            <p class="garage-action-hint">Click button to buy or equip</p>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-card p1-hud">
+        <div class="hud-label">P1 · GETAWAY</div>
+        <div class="hud-row"><span>CASH</span><strong id="p1-cash">$0</strong></div>
+        <div class="hud-row"><span>SPEED</span><strong id="p1-speed">0</strong></div>
+        <div class="hud-row"><span>HEAT</span><strong id="p1-heat">0</strong></div>
+        <div class="hud-row"><span>JOB</span><strong id="p1-job">FIND ROBBER</strong></div>
+      </div>
+      <div class="hud-center">
+        <div id="race-timer">CITY STREETS</div>
+        <div id="lap-target">GAS · CLUB · BANK · HOSPITAL</div>
+        <div id="shared-cash">POOL $0</div>
+      </div>
+      <div class="hud-card p2-hud">
+        <div class="hud-label">P2 · GETAWAY</div>
+        <div class="hud-row"><span>CASH</span><strong id="p2-cash">$0</strong></div>
+        <div class="hud-row"><span>SPEED</span><strong id="p2-speed">0</strong></div>
+        <div class="hud-row"><span>HEAT</span><strong id="p2-heat">0</strong></div>
+        <div class="hud-row"><span>JOB</span><strong id="p2-job">FIND ROBBER</strong></div>
+      </div>
+    </div>
+
+    <!-- In-play corner controls -->
+    <div id="play-controls" class="hidden">
+      <button id="play-garage-btn" class="play-ctrl-btn" type="button">
+        <span>GARAGE</span>
+        <kbd>G</kbd>
+      </button>
+      <button id="play-settings-btn" class="play-ctrl-btn" type="button">
+        <span>SETTINGS</span>
+      </button>
+    </div>
+
+    <!-- Pause -->
+    <div id="pause-screen" class="overlay hidden">
+      <div class="panel compact">
+        <h2>PAUSED</h2>
+        <p>Esc / P resume · G garage</p>
+        <button id="resume-btn" class="btn primary">RESUME</button>
+        <div class="btn-row">
+          <button id="garage-btn" class="btn ghost">GARAGE</button>
+          <button id="settings-btn" class="btn ghost" type="button">SETTINGS</button>
+        </div>
+        <button id="switch-mode-btn" class="btn ghost">SWITCH TO 2 PLAYER</button>
+        <button id="restart-btn" class="btn ghost">RESTART RUN</button>
+        <button id="logout-pause-btn" class="btn ghost">SWITCH PROFILE</button>
+      </div>
+    </div>
+
+    <!-- Busted / delivered toast handled in HUD; busted overlay -->
+    <div id="bust-screen" class="overlay hidden">
+      <div class="panel compact">
+        <p class="eyebrow">WRECKED</p>
+        <h2 id="bust-title">PLAYER 1 WRECKED</h2>
+        <p class="tagline">Too much crash damage. Passenger lost. Car reset.</p>
+        <button id="bust-ok" class="btn primary">CONTINUE</button>
+      </div>
+    </div>
+
+    <div id="loading" class="overlay">
+      <div class="panel compact">
+        <h2>LOADING CITY…</h2>
+        <p class="tagline" id="load-status">Building streets</p>
+        <div class="load-bar"><div id="load-fill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
